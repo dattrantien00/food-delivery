@@ -5,7 +5,7 @@ import (
 	"food-delivery/common"
 	"strings"
 )
-
+const EntityName = "Restaurant"
 type Restaurant struct {
 	common.SQLModel
 	// Id     int    `json:"id" gorm:"column:id;"`
@@ -15,6 +15,9 @@ type Restaurant struct {
 
 func (Restaurant) TableName() string { return "restaurants" }
 
+func (r *Restaurant) Mask(isAdminOrOwner bool){
+	r.GenUID(common.DbTypeRestaurant)
+}
 type RestaurantCreate struct {
 	common.SQLModel
 	Name string `json:"name" gorm:"column:name;"`
@@ -22,6 +25,9 @@ type RestaurantCreate struct {
 }
 
 func (RestaurantCreate) TableName() string { return "restaurants" }
+func (r *RestaurantCreate) Mask(isAdminOrOwner bool){
+	r.GenUID(common.DbTypeRestaurant)
+}
 
 func (c *RestaurantCreate) Validate() error {
 	c.Name = strings.TrimSpace(c.Name)

@@ -21,7 +21,7 @@ func (s *sqlStore) ListDataWithCondition(context context.Context, filter *restau
 		}
 	}
 	if err := db.Count(&paging.Total).Error; err != nil {
-		return nil, err
+		return nil, common.ErrDb(err)
 	}
 
 	offset := (paging.Page - 1) * paging.Limit
@@ -30,7 +30,7 @@ func (s *sqlStore) ListDataWithCondition(context context.Context, filter *restau
 		Limit(paging.Limit).
 		Order("id desc").
 		Find(&data).Error; err != nil {
-		return nil, err
+		return nil, common.ErrDb(err)
 	}
 	return data, nil
 }

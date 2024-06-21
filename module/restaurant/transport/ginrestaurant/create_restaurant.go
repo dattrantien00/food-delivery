@@ -17,22 +17,19 @@ func CreateRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 
 		if err := c.ShouldBindJSON(&data); err != nil {
 
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
+			c.JSON(http.StatusBadRequest, common.ErrInvalidRequest(err))
 			return
 		}
 
 		store := restaurantstorage.NewSQLStore(appCtx.GetMainDBConnection())
 		biz := restaurantbiz.NewCreateRestaurantBiz(store)
 		if err := biz.CreateRestaurant(c.Request.Context(), &data); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
+			c.JSON(http.StatusBadRequest, err)
 			return
 		}
+		data.Mask(false)
 
-		c.JSON(http.StatusOK, common.SimpleSuccessResponse(data.Id))
+		c.JSON(http.StatusOK, common.SimpleSuccessResponse(data.FakeId))
 	}
 }
 
