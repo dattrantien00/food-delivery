@@ -24,13 +24,28 @@ func (s *sqlStore) ListDataWithCondition(context context.Context, filter *restau
 		return nil, common.ErrDb(err)
 	}
 
-	offset := (paging.Page - 1) * paging.Limit
+	if v := paging.FakeCursor; v != "" {
+		uid, err := common.FromBase58(v)
+		if err != nil {
+			return nil, common.ErrDb(err)
+		}
+		db = db.Where("id<?", uid.GetLocalID())
+	}else{
+		offset := (paging.Page - 1) * paging.Limit
+		db = db.Offset(offset)
+	}
+
 	if err := db.
-		Offset(offset).
 		Limit(paging.Limit).
 		Order("id desc").
 		Find(&data).Error; err != nil {
 		return nil, common.ErrDb(err)
+	}
+
+	if len(data) > 0{
+		last := data[len(data)-1]
+		last.Mask(false)
+		paging.NextCursor = last.FakeId.String()
 	}
 	return data, nil
 }
