@@ -76,6 +76,10 @@ func ErrInternal(err error) *AppError {
 	return NewErrorResponse(err, "internal error", err.Error(), "ErrInternal")
 }
 
+func ErrNoPermission(err error) *AppError {
+	return NewErrorResponse(err, "no permission", err.Error(), "ErrNoPermission")
+}
+
 func ErrCannotListEntity(entity string, err error) *AppError {
 	return NewCustomError(
 		err,

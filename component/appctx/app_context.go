@@ -15,7 +15,7 @@ type AppContext interface {
 type AppCtx struct {
 	db         *gorm.DB
 	upProvider uploadprovider.UploadProvider
-	secretKey  string
+	secretKey  string //for jwt
 }
 
 func (ctx *AppCtx) GetMainDBConnection() *gorm.DB {
@@ -29,10 +29,11 @@ func (ctx *AppCtx) SecretKey() string {
 	return ctx.secretKey
 }
 
-func NewAppContext(db *gorm.DB, upProvider uploadprovider.UploadProvider) *AppCtx {
+func NewAppContext(db *gorm.DB, upProvider uploadprovider.UploadProvider,secretKey string) *AppCtx {
 	return &AppCtx{
 		db:         db,
 		upProvider: upProvider,
+		secretKey: secretKey,
 		// secretKey:  secretKey,
 	}
 }

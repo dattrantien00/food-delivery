@@ -6,6 +6,7 @@ import (
 	"food-delivery/middleware"
 	"food-delivery/module/restaurant/transport/ginrestaurant"
 	"food-delivery/module/upload/transport/ginupload"
+	"food-delivery/module/user/transport/ginuser"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,9 @@ func main() {
 	s3ApiKey := os.Getenv("S3ApiKey")
 	s3SecretKey := os.Getenv("S3SecretKey")
 	s3Domain := os.Getenv("S3Domain")
-	// secretKey := os.Getenv("SYSTEM_SECRET")
+
+	// jwtSecretKey := os.Getenv()
+	secretKey := os.Getenv("SYSTEM_SECRET")
 
 	// fmt.Println(s3BucketName, s3Region, s3ApiKey)
 
@@ -31,9 +34,9 @@ func main() {
 	db = db.Debug()
 
 	s3Provider := uploadprovider.NewS3Provider(s3BucketName, s3Region, s3ApiKey, s3SecretKey, s3Domain)
-	appCtx := appctx.NewAppContext(db, s3Provider)
+	appCtx := appctx.NewAppContext(db, s3Provider, secretKey)
 	g := gin.Default()
-	g.Use(middleware.Recover(appCtx))
+	g.Use(middleware.Recover(appCtx), )
 
 	v1 := g.Group("/v1")
 	v1.GET("restaurant", ginrestaurant.ListRestaurant(appCtx))
@@ -41,7 +44,9 @@ func main() {
 	v1.DELETE("restaurant/:id", ginrestaurant.DeleteRestaurant(appCtx))
 
 	v1.POST("/upload", ginupload.UploadImage(appCtx))
-	v1.Static("/static", "./static")
+	v1.POST("/register", ginuser.RegisterUser(appCtx))
+	v1.POST("/login", ginuser.Login(appCtx))
+	v1.GET("/profile", middleware.RequireAuth(appCtx),ginuser.Profile(appCtx))
 	g.Run()
 	// fmt.Println(os.Getenv("BUCKET_NAME"))
 }
