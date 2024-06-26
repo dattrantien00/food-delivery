@@ -11,24 +11,31 @@ const EntityName = "Restaurant"
 type Restaurant struct {
 	common.SQLModel
 	// Id     int    `json:"id" gorm:"column:id;"`
-	Name  string         `json:"name" gorm:"column:name;"`
-	Addr  string         `json:"addr" gorm:"column:addr;"`
-	Logo  *common.Image  `json:"logo" gorm:"column:logo;"`
-	Cover *common.Images `json:"cover" gorm:"column:cover;"`
+	Name       string             `json:"name" gorm:"column:name;"`
+	Addr       string             `json:"addr" gorm:"column:addr;"`
+	UserId     int                `json:"-" gorm:"column:user_id;"`
+	Logo       *common.Image      `json:"logo" gorm:"column:logo;"`
+	Cover      *common.Images     `json:"cover" gorm:"column:cover;"`
+	User       *common.SimpleUser `json:"user" gorm:"preload:false"`
+	LikedCount int                `json:"liked_count" gorm"-"`
 }
 
 func (Restaurant) TableName() string { return "restaurants" }
 
 func (r *Restaurant) Mask(isAdminOrOwner bool) {
 	r.GenUID(common.DbTypeRestaurant)
+	if u := r.User; u != nil {
+		u.Mask()
+	}
 }
 
 type RestaurantCreate struct {
 	common.SQLModel
-	Name string        `json:"name" gorm:"column:name;"`
-	Addr string        `json:"addr" gorm:"column:addr;"`
-	Logo *common.Image `json:"logo" gorm:"column:logo;"`
-	Cover *common.Images `json:"cover" gorm:"column:cover;"`
+	Name   string         `json:"name" gorm:"column:name;"`
+	Addr   string         `json:"addr" gorm:"column:addr;"`
+	UserId int            `json:"-" gorm:"column:user_id;"`
+	Logo   *common.Image  `json:"logo" gorm:"column:logo;"`
+	Cover  *common.Images `json:"cover" gorm:"column:cover;"`
 }
 
 func (RestaurantCreate) TableName() string { return "restaurants" }
@@ -45,9 +52,9 @@ func (c *RestaurantCreate) Validate() error {
 }
 
 type RestaurantUpdate struct {
-	Name *string       `json:"name" gorm:"column:name;"`
-	Addr *string       `json:"addr" gorm:"column:addr;"`
-	Logo *common.Image `json:"logo" gorm:"column:logo;"`
+	Name  *string        `json:"name" gorm:"column:name;"`
+	Addr  *string        `json:"addr" gorm:"column:addr;"`
+	Logo  *common.Image  `json:"logo" gorm:"column:logo;"`
 	Cover *common.Images `json:"cover" gorm:"column:cover;"`
 }
 

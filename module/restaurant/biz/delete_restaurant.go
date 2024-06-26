@@ -2,6 +2,7 @@ package restaurantbiz
 
 import (
 	"context"
+	"errors"
 	"food-delivery/common"
 	restaurantmodel "food-delivery/module/restaurant/model"
 )
@@ -12,12 +13,14 @@ type deleteRestaurantStore interface {
 	Delete(context context.Context, id int) error
 }
 type deleteRestaurantBiz struct {
-	store deleteRestaurantStore
+	store     deleteRestaurantStore
+	requester common.Requester
 }
 
-func NewDeleteRestaurantBiz(store deleteRestaurantStore) *deleteRestaurantBiz {
+func NewDeleteRestaurantBiz(store deleteRestaurantStore, requester common.Requester) *deleteRestaurantBiz {
 	return &deleteRestaurantBiz{
-		store: store,
+		store:     store,
+		requester: requester,
 	}
 }
 
@@ -31,6 +34,9 @@ func (biz *deleteRestaurantBiz) DeleteRestaurant(context context.Context, id int
 
 	if oldData.Status == 0 {
 		return common.ErrEntityDeleted(restaurantmodel.EntityName, nil)
+	}
+	if oldData.UserId != biz.requester.GetUserId() {
+		return common.ErrNoPermission(errors.New("Not permission"))
 	}
 	if err := biz.store.Delete(context, id); err != nil {
 		return common.ErrCannotDeleteEntity(restaurantmodel.EntityName, err)

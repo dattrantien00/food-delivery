@@ -4,9 +4,6 @@ import (
 	"food-delivery/component/appctx"
 	uploadprovider "food-delivery/component/provider"
 	"food-delivery/middleware"
-	"food-delivery/module/restaurant/transport/ginrestaurant"
-	"food-delivery/module/upload/transport/ginupload"
-	"food-delivery/module/user/transport/ginuser"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -36,17 +33,9 @@ func main() {
 	s3Provider := uploadprovider.NewS3Provider(s3BucketName, s3Region, s3ApiKey, s3SecretKey, s3Domain)
 	appCtx := appctx.NewAppContext(db, s3Provider, secretKey)
 	g := gin.Default()
-	g.Use(middleware.Recover(appCtx), )
+	g.Use(middleware.Recover(appCtx))
 
-	v1 := g.Group("/v1")
-	v1.GET("restaurant", ginrestaurant.ListRestaurant(appCtx))
-	v1.POST("restaurant", ginrestaurant.CreateRestaurant(appCtx))
-	v1.DELETE("restaurant/:id", ginrestaurant.DeleteRestaurant(appCtx))
-
-	v1.POST("/upload", ginupload.UploadImage(appCtx))
-	v1.POST("/register", ginuser.RegisterUser(appCtx))
-	v1.POST("/login", ginuser.Login(appCtx))
-	v1.GET("/profile", middleware.RequireAuth(appCtx),ginuser.Profile(appCtx))
+	setRoute(appCtx, g)
 	g.Run()
 	// fmt.Println(os.Getenv("BUCKET_NAME"))
 }

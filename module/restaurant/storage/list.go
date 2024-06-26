@@ -17,7 +17,7 @@ func (s *sqlStore) ListDataWithCondition(context context.Context, filter *restau
 
 	if f := filter; f != nil {
 		if f.OwnerId > 0 {
-			db = db.Where("owner_id=?", f.OwnerId)
+			db = db.Where("user_id=?", f.OwnerId)
 		}
 	}
 	if err := db.Count(&paging.Total).Error; err != nil {
@@ -30,11 +30,14 @@ func (s *sqlStore) ListDataWithCondition(context context.Context, filter *restau
 			return nil, common.ErrDb(err)
 		}
 		db = db.Where("id<?", uid.GetLocalID())
-	}else{
+	} else {
 		offset := (paging.Page - 1) * paging.Limit
 		db = db.Offset(offset)
 	}
-
+	for i := range moreKeys {
+		db = db.Preload(moreKeys[i])
+	}
+	
 	if err := db.
 		Limit(paging.Limit).
 		Order("id desc").
@@ -42,10 +45,11 @@ func (s *sqlStore) ListDataWithCondition(context context.Context, filter *restau
 		return nil, common.ErrDb(err)
 	}
 
-	if len(data) > 0{
+	if len(data) > 0 {
 		last := data[len(data)-1]
 		last.Mask(false)
 		paging.NextCursor = last.FakeId.String()
+
 	}
 	return data, nil
 }
