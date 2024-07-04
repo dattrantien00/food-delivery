@@ -4,6 +4,7 @@ import (
 	"food-delivery/component/appctx"
 	"food-delivery/middleware"
 	"food-delivery/module/restaurant/transport/ginrestaurant"
+	"food-delivery/module/restaurantlike/transport/ginrstlike"
 	"food-delivery/module/upload/transport/ginupload"
 	"food-delivery/module/user/transport/ginuser"
 
@@ -17,6 +18,10 @@ func setRoute(appCtx appctx.AppContext, g *gin.Engine) {
 		restaurant.GET("", ginrestaurant.ListRestaurant(appCtx))
 		restaurant.POST("", ginrestaurant.CreateRestaurant(appCtx))
 		restaurant.DELETE("/:id", ginrestaurant.DeleteRestaurant(appCtx))
+
+		restaurant.POST("/:id/liked-users",ginrstlike.LikeRestaurant(appCtx))
+		restaurant.DELETE("/:id/liked-users",ginrstlike.UnLikeRestaurant(appCtx))
+		restaurant.GET("/:id/liked-users",ginrstlike.ListUsers(appCtx))
 	}
 
 	v1.POST("/upload", ginupload.UploadImage(appCtx))
@@ -24,6 +29,7 @@ func setRoute(appCtx appctx.AppContext, g *gin.Engine) {
 	v1.POST("/login", ginuser.Login(appCtx))
 	v1.GET("/profile", ginuser.Profile(appCtx))
 
+	
 	admin := v1.Group("/admin", middleware.RequireAuth(appCtx), middleware.RoleRequire(appCtx, "admin"))
 	{
 		admin.GET("/", ginuser.Profile(appCtx))

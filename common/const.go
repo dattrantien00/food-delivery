@@ -1,16 +1,24 @@
 package common
 
+import "log"
+
 const (
 	DbTypeRestaurant = 1
 	DbTypeUser       = 2
 )
 
-const(
+const (
 	CurrentUser = "user"
 )
 
-type Requester interface{
+type Requester interface {
 	GetUserId() int
 	GetEmail() string
 	GetRole() string
+}
+
+func AppRecover() {
+	if err := recover(); err != nil {
+		log.Println(err)
+	}
 }

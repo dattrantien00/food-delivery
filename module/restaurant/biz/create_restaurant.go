@@ -9,6 +9,8 @@ import (
 type createRestaurantStore interface {
 	Create(context context.Context, data *restaurantmodel.RestaurantCreate) error
 }
+
+
 type createRestaurantBiz struct {
 	store createRestaurantStore
 }
