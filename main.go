@@ -4,6 +4,8 @@ import (
 	"food-delivery/component/appctx"
 	uploadprovider "food-delivery/component/provider"
 	"food-delivery/middleware"
+	"food-delivery/pubsub/localpb"
+	"food-delivery/subscriber"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +33,11 @@ func main() {
 	db = db.Debug()
 
 	s3Provider := uploadprovider.NewS3Provider(s3BucketName, s3Region, s3ApiKey, s3SecretKey, s3Domain)
-	appCtx := appctx.NewAppContext(db, s3Provider, secretKey)
+	pubsub := localpb.NewPubSub()
+	appCtx := appctx.NewAppContext(db, s3Provider, secretKey, pubsub)
+
+	subscriber.NewEngine(appCtx).Start()
+	
 	g := gin.Default()
 	g.Use(middleware.Recover(appCtx))
 

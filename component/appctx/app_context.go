@@ -2,6 +2,7 @@ package appctx
 
 import (
 	uploadprovider "food-delivery/component/provider"
+	"food-delivery/pubsub"
 
 	"gorm.io/gorm"
 )
@@ -10,12 +11,14 @@ type AppContext interface {
 	GetMainDBConnection() *gorm.DB
 	UploadProvider() uploadprovider.UploadProvider
 	SecretKey() string
+	GetPubsub() pubsub.Pubsub
 }
 
 type AppCtx struct {
 	db         *gorm.DB
 	upProvider uploadprovider.UploadProvider
 	secretKey  string //for jwt
+	pubsub     pubsub.Pubsub
 }
 
 func (ctx *AppCtx) GetMainDBConnection() *gorm.DB {
@@ -29,11 +32,15 @@ func (ctx *AppCtx) SecretKey() string {
 	return ctx.secretKey
 }
 
-func NewAppContext(db *gorm.DB, upProvider uploadprovider.UploadProvider,secretKey string) *AppCtx {
+func (ctx *AppCtx) GetPubsub() pubsub.Pubsub {
+	return ctx.pubsub
+}
+func NewAppContext(db *gorm.DB, upProvider uploadprovider.UploadProvider, secretKey string, pubsub pubsub.Pubsub) *AppCtx {
 	return &AppCtx{
 		db:         db,
 		upProvider: upProvider,
-		secretKey: secretKey,
+		secretKey:  secretKey,
+		pubsub:     pubsub,
 		// secretKey:  secretKey,
 	}
 }

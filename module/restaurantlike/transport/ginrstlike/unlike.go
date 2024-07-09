@@ -3,7 +3,6 @@ package ginrstlike
 import (
 	"food-delivery/common"
 	"food-delivery/component/appctx"
-	restaurantstorage "food-delivery/module/restaurant/storage"
 	restaurantlikebiz "food-delivery/module/restaurantlike/biz"
 	restaurantlikestorage "food-delivery/module/restaurantlike/store"
 	"net/http"
@@ -26,8 +25,8 @@ func UnLikeRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 		// }
 
 		store := restaurantlikestorage.NewSQLStore(appCtx.GetMainDBConnection())
-		likeStore := restaurantstorage.NewSQLStore(appCtx.GetMainDBConnection())
-		biz := restaurantlikebiz.NewUserUnLikeRestaurant(store,likeStore)
+		// likeStore := restaurantstorage.NewSQLStore(appCtx.GetMainDBConnection())
+		biz := restaurantlikebiz.NewUserUnLikeRestaurant(store, appCtx.GetPubsub())
 		if err := biz.UnLikeRestaurant(c.Request.Context(), requester.GetUserId(), int(uid.GetLocalID())); err != nil {
 			c.JSON(http.StatusBadRequest, err)
 			return
