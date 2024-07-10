@@ -12,6 +12,7 @@ import (
 )
 
 func setRoute(appCtx appctx.AppContext, g *gin.Engine) {
+	g.StaticFile("/demo","./demo.html")
 	v1 := g.Group("/v1")
 	restaurant := v1.Group("restaurant", middleware.RequireAuth(appCtx))
 	{

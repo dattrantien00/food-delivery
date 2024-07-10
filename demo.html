@@ -1,0 +1,55 @@
+<!doctype html>
+
+<head>
+    <title>Demo socket 200lab </title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.js"></script>
+</head>
+
+
+
+<body>
+    <div id="main">
+
+    </div>
+
+    <script>
+        const socket = io("", {
+            transports: ['websocket'],
+        });
+
+
+        socket.on('connect', () => {
+            console.log('Client connected');
+
+            // Emit token
+            socket.emit('authenticate', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQYXlsb2FkIjp7InVzZXJfaWQiOjExLCJyb2xlIjoidXNlciJ9LCJleHAiOjE3MjE5NjI4NTIsImlhdCI6MTcxOTM3MDg1Mn0.aqLVagTMgZtoIguCzmjYcJoNvtcqcAfNg_cwmpF3n1A');
+if (locTimer != null)
+            setInterval(function () {
+                socket.emit('UserUpdateLocation', { lat: 10, lng: 12 })
+            }, 1000)
+        })
+
+        socket.on('authenticated', (msg) => {
+            console.log(msg)
+        })
+
+        socket.on('UserLikeRestaurant', (msg) => console.log(msg));
+        socket.on('test', (msg) => console.log(msg));
+        socket.on('reply', (msg) => console.log(msg));
+
+        socket.on('disconnect', () => console.log('Socket is disconnected'))
+
+
+
+    // const socket2 = io("/chat", {
+    //     // transports: ['websocket'],
+    // });
+    //
+    // socket2.on('connect', () => {
+    //     console.log('Client socket2 connected');
+    // })
+
+    </script>
+</body>
+
+</html>

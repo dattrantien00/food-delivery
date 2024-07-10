@@ -5,6 +5,7 @@ import (
 	uploadprovider "food-delivery/component/provider"
 	"food-delivery/middleware"
 	"food-delivery/pubsub/localpb"
+	"food-delivery/skio"
 	"food-delivery/subscriber"
 	"os"
 
@@ -37,11 +38,78 @@ func main() {
 	appCtx := appctx.NewAppContext(db, s3Provider, secretKey, pubsub)
 
 	subscriber.NewEngine(appCtx).Start()
-	
+
 	g := gin.Default()
 	g.Use(middleware.Recover(appCtx))
 
 	setRoute(appCtx, g)
+	// startSocketIOServer(g, appCtx)
+	rtEngine := skio.NewEngine()
+	appCtx.SetRealtimeEngine(rtEngine)
+	rtEngine.Run(appCtx, g)
 	g.Run()
 	// fmt.Println(os.Getenv("BUCKET_NAME"))
 }
+
+// func startSocketIOServer(engine *gin.Engine, appCtx *appctx.AppCtx) {
+// 	server, _ := socketio.NewServer(&engineio.Options{
+// 		Transports: []transport.Transport{websocket.Default},
+// 	})
+
+// 	server.OnConnect("/", func(s socketio.Conn) error {
+// 		s.SetContext("")
+// 		fmt.Println("connected:", s.ID(), " IP:", s.RemoteAddr())
+// 		s.Emit("test", "abc")
+// 		return nil
+// 	})
+// 	server.OnError("/", func(s socketio.Conn, e error) {
+// 		fmt.Println("meet error:", e)
+// 	})
+// 	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
+// 		fmt.Println("closed", reason)
+// 		// Remove socket from socket engine (from app context)
+// 	})
+// 	server.OnEvent("/", "test", func(s socketio.Conn, msg string) {
+// 		fmt.Println(msg)
+// 	})
+
+// 	server.OnEvent("/", "authenticate", func(s socketio.Conn, token string) {
+// 		// Validate token
+// 		// If false: s.Close(), and return
+
+// 		// If true
+// 		// => UserId
+// 		// Fetch db find user by Id
+// 		// Here: s belongs to who? (user_id)
+// 		// We need a map[user_id][]socketio.Conn
+// 		log.Println(s.ID(), token)
+// 	})
+
+// 	type A struct {
+// 		Age int `json:"age"`
+// 	}
+
+// 	server.OnEvent("/", "notice", func(s socketio.Conn, msg A) {
+// 		fmt.Println("notice:", msg.Age)
+// 		s.Emit("reply", msg)
+// 	})
+
+// 	server.OnEvent("/chat", "msg", func(s socketio.Conn, msg string) string {
+// 		s.SetContext(msg)
+// 		return "recv " + msg
+// 	})
+
+// 	server.OnEvent("/", "bye", func(s socketio.Conn) string {
+// 		last := s.Context().(string)
+// 		s.Emit("bye", last)
+// 		s.Close()
+// 		return last
+// 	})
+
+// 	go server.Serve()
+
+// 	engine.GET("/socket.io/*any", gin.WrapH(server))
+// 	engine.POST("/socket.io/*any", gin.WrapH(server))
+
+// 	engine.StaticFile("/demo/", "./demo.html")
+// }

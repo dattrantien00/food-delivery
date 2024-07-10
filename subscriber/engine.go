@@ -14,9 +14,7 @@ type consumerJob struct {
 	Hld   func(ctx context.Context, message *pubsub.Message) error
 }
 
-// func Setup(ctx appctx.AppContext) {
 
-// }
 
 type consumerEngine struct {
 	appCtx appctx.AppContext
@@ -31,6 +29,7 @@ func (engine *consumerEngine) Start() error {
 		common.TopicUserLikeRestaurant,
 		false,
 		IncreaseLikeCountAfterUserLikeRestaurant(engine.appCtx),
+		EmitRealtimeAfterUserLikeRestaurant(engine.appCtx),
 	)
 	engine.startSubTopic(
 		common.TopicUserUnLikeRestaurant,
