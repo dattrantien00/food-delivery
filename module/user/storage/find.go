@@ -5,6 +5,7 @@ import (
 	"food-delivery/common"
 	usermodel "food-delivery/module/user/model"
 
+	"go.opencensus.io/trace"
 	"gorm.io/gorm"
 )
 
@@ -13,7 +14,8 @@ func (store *sqlStore) FindUserByCondition(
 	conditions map[string]interface{},
 	relations ...string,
 ) (*usermodel.User, error) {
-
+	_, span := trace.StartSpan(ctx, "store_user.find_user")
+	defer span.End()
 	var user usermodel.User
 	db := store.db.Table(usermodel.User{}.TableName())
 
@@ -26,6 +28,6 @@ func (store *sqlStore) FindUserByCondition(
 
 		return nil, err
 	}
-
+	
 	return &user, nil
 }

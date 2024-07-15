@@ -4,6 +4,8 @@ import (
 	"context"
 	"food-delivery/common"
 	restaurantmodel "food-delivery/module/restaurant/model"
+
+	"go.opencensus.io/trace"
 )
 
 type listRestaurantRepo interface {
@@ -27,5 +29,12 @@ func NewListRestaurantBiz(repo listRestaurantRepo) *listRestaurantBiz {
 
 func (biz *listRestaurantBiz) ListRestaurant(context context.Context, filter *restaurantmodel.Filter,
 	paging *common.Paging) ([]restaurantmodel.Restaurant, error) {
-	return biz.repo.ListRestaurant(context, filter, paging)
+	ctx,span := trace.StartSpan(context, "biz.list_restaurant")
+	defer span.End()
+	result,err := biz.repo.ListRestaurant(ctx, filter, paging)
+	if err != nil{
+		return nil,err
+	}
+	
+	return result,nil
 }

@@ -1,15 +1,24 @@
 package middleware
 
 import (
+	"context"
 	"errors"
 	"food-delivery/common"
 	"food-delivery/component/appctx"
 	"food-delivery/component/tokenprovider/jwt"
-	userstorage "food-delivery/module/user/storage"
+	usermodel "food-delivery/module/user/model"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
+
+type AuthenStore interface {
+	FindUserByCondition(
+		ctx context.Context,
+		conditions map[string]interface{},
+		relations ...string,
+	) (*usermodel.User, error)
+}
 
 func extractTokenFromHeader(s string) (string, error) {
 	part := strings.Split(s, " ")
@@ -19,7 +28,7 @@ func extractTokenFromHeader(s string) (string, error) {
 	return part[1], nil
 }
 
-func RequireAuth(appCtx appctx.AppContext) func(c *gin.Context) {
+func RequireAuth(appCtx appctx.AppContext, authenStore AuthenStore) func(c *gin.Context) {
 	tokenProvider := jwt.NewJwtProvider(appCtx.SecretKey())
 
 	return func(c *gin.Context) {
@@ -27,15 +36,15 @@ func RequireAuth(appCtx appctx.AppContext) func(c *gin.Context) {
 		if err != nil {
 			panic(err)
 		}
-		db := appCtx.GetMainDBConnection()
-		store := userstorage.NewSQLStore(db)
+		// db := appCtx.GetMainDBConnection()
+		// store := userstorage.NewSQLStore(db)
 
 		payload, err := tokenProvider.Validate(token)
 		if err != nil {
 			panic(err)
 		}
 
-		user, err := store.FindUserByCondition(c.Request.Context(), map[string]interface{}{
+		user, err := authenStore.FindUserByCondition(c.Request.Context(), map[string]interface{}{
 			"id": payload.UserId,
 		})
 		if err != nil {

@@ -7,9 +7,13 @@ import (
 	"food-delivery/pubsub/localpb"
 	"food-delivery/skio"
 	"food-delivery/subscriber"
+	"log"
+	"net/http"
 	"os"
-
+	"go.opencensus.io/plugin/ochttp"
 	"github.com/gin-gonic/gin"
+	jg "go.opencensus.io/exporter/jaeger"
+	"go.opencensus.io/trace"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -47,7 +51,22 @@ func main() {
 	rtEngine := skio.NewEngine()
 	appCtx.SetRealtimeEngine(rtEngine)
 	rtEngine.Run(appCtx, g)
-	g.Run()
+	// g.Run()
+
+	je,err := jg.NewExporter(jg.Options{
+		AgentEndpoint: "127.0.0.1:6831",
+		Process: jg.Process{ServiceName: "food-delivery"},
+	})
+	if err != nil{
+		log.Print(err)
+	}
+
+	trace.RegisterExporter(je)
+	trace.ApplyConfig(trace.Config{DefaultSampler: trace.ProbabilitySampler(1)})
+
+	http.ListenAndServe(":8080",&ochttp.Handler{
+		Handler: g,
+	})
 	// fmt.Println(os.Getenv("BUCKET_NAME"))
 }
 

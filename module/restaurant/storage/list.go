@@ -4,6 +4,8 @@ import (
 	"context"
 	"food-delivery/common"
 	restaurantmodel "food-delivery/module/restaurant/model"
+
+	"go.opencensus.io/trace"
 )
 
 func (s *sqlStore) ListDataWithCondition(context context.Context, filter *restaurantmodel.Filter,
@@ -20,10 +22,12 @@ func (s *sqlStore) ListDataWithCondition(context context.Context, filter *restau
 			db = db.Where("user_id=?", f.OwnerId)
 		}
 	}
+	_, span := trace.StartSpan(context, "storagerestaurant.count_restaurant")
 	if err := db.Count(&paging.Total).Error; err != nil {
+		span.End()
 		return nil, common.ErrDb(err)
 	}
-
+	span.End()
 	if v := paging.FakeCursor; v != "" {
 		uid, err := common.FromBase58(v)
 		if err != nil {
@@ -37,7 +41,9 @@ func (s *sqlStore) ListDataWithCondition(context context.Context, filter *restau
 	for i := range moreKeys {
 		db = db.Preload(moreKeys[i])
 	}
-	
+
+	_, span1 := trace.StartSpan(context, "storagerestaurant.list_restaurant")
+	defer span1.End()
 	if err := db.
 		Limit(paging.Limit).
 		Order("id desc").
